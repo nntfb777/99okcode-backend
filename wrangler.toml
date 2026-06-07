@@ -1,0 +1,37 @@
+name = "99okcode-backend"
+main = "src/server.js"
+compatibility_date = "2026-04-19"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+# Khu vực khai báo Database D1
+[[d1_databases]]
+binding = "DB_99OK"
+database_name = "99ok_db"
+database_id = "bec01890-df2a-4afb-9a68-e8c353133bc3"
+
+[[d1_databases]]
+binding = "DB_79KING"
+database_name = "79k_db"
+database_id = "8f73dbbd-4d65-4303-bf9a-3eb75abb698c"
+
+[[d1_databases]]
+binding = "DB_OKKING"
+database_name = "okk_db"
+database_id = "42433a2c-445a-4560-a1c7-cdc0ae263bca"
+
+[[d1_databases]]
+binding = "DB_KL99"
+database_name = "kl_db"
+database_id = "0a090af2-31d6-4143-8f51-b517baa8660c"
+
+# Khu vực chứa các biến môi trường (Thay thế cho file .env)
+[vars]
+ADMIN_SECRET_KEY = "Admin@123!"
+JWT_SECRET = "KhoaBaoMatSieuCap_2026_KhongAiBiet"
+REDIS_URL = "https://creative-crayfish-101001.upstash.io"
+REDIS_TOKEN = "gQAAAAAAAYqJAAIocDFhNDQ0ZGZmNmM2Mzk0MTlmYjc3Yzg4MmY3ZmYyZTE4M3AxMTAxMDAx"
+TURNSTILE_SECRET = "0x4AAAAAAC_GK02yfs5qNlXY9IscVGcPJzI"
