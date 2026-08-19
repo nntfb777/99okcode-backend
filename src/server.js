@@ -10,7 +10,7 @@ import historyRoutes from './routes/historyRoutes';
 import clientRoutes from './routes/clientRoutes';
 import pageRoutes from './routes/pageRoutes';
 import manaRoutes from './routes/manaRoutes';
-
+import adminLinks from './routes/adminLinks';
 const app = new Hono();
 
 app.use('*', logger());
@@ -92,6 +92,7 @@ app.route('/api/admin', adminRoutes);
 app.route('/api/history', historyRoutes);
 app.route('/a/c', clientRoutes);
 app.route('/api/admin', manaRoutes);
+app.route('/api/admin/links', adminLinks);
 
 app.onError((err, c) => {
   console.error(`Lỗi hệ thống: ${err.message}`);

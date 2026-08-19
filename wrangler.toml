@@ -32,6 +32,7 @@ database_id = "0a090af2-31d6-4143-8f51-b517baa8660c"
 [vars]
 ADMIN_SECRET_KEY = "Admin@123!"
 JWT_SECRET = "KhoaBaoMatSieuCap_2026_KhongAiBiet"
+WORKER_API_URL = "linksbackend.nnt79g.workers.dev"
 REDIS_URL = "https://creative-crayfish-101001.upstash.io"
 REDIS_TOKEN = "gQAAAAAAAYqJAAIocDFhNDQ0ZGZmNmM2Mzk0MTlmYjc3Yzg4MmY3ZmYyZTE4M3AxMTAxMDAx"
 TURNSTILE_SECRET = "0x4AAAAAAC_GK02yfs5qNlXY9IscVGcPJzI"
