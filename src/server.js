@@ -64,6 +64,7 @@ const dbSwitcher = async (c, next) => {
             break;
         case 'fb777':
             db = c.env.DB_FB777
+            break;
         default:
             // Nếu không gửi siteId hoặc siteId lạ, trả về lỗi luôn
             return c.json({ success: false, message: "Site ID không hợp lệ!" }, 400);
