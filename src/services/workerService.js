@@ -1,5 +1,5 @@
 export const fetchWorkerApi = async (endpoint, method = 'GET', body = null, env = {}, siteId = '99ok') => {
-  const workerUrl = env.WORKER_API_URL || 'https://link-image-manager.<subdomain>.workers.dev';
+  const workerUrl = env.WORKER_API_URL || 'linksbackend.nnt79g.workers.dev';
   const secretKey = env.ADMIN_SECRET_KEY || 'Admin@123!';
 
   const headers = {
