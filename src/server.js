@@ -21,7 +21,7 @@ app.use('*', cors({
   origin: (origin) => {
     // Cho phéptrang admin và trang khách
     const allowedOrigins = [
-      'http://localhost:5500',
+      'https://adm.79king.ai/',
       'https://99okcode-admin.pages.dev',
       'https://99okcode.pages.dev',
       'https://79kingcode.pages.dev',
