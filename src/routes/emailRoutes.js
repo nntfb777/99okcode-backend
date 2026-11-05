@@ -20,4 +20,18 @@ emailRoutes.get('/emails', async (c) => {
     }
 });
 
+
+emailRoutes.delete('/emails/:id', async (c) => {
+    const db = c.get('selectedDB');
+    const id = c.req.param('id');
+    try {
+        await db.prepare("DELETE FROM emails WHERE id = ?").bind(id).run();
+        return c.json({ success: true, message: "Đã xóa email thành công!" });
+    } catch (error) {
+        console.error("Lỗi xóa email:", error);
+        return c.json({ success: false, message: error.message }, 500);
+    }
+});
+
+
 export default emailRoutes;
