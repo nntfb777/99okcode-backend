@@ -11,6 +11,10 @@ import clientRoutes from './routes/clientRoutes';
 import pageRoutes from './routes/pageRoutes';
 import manaRoutes from './routes/manaRoutes';
 import adminLinks from './routes/adminLinks';
+import emailRoutes from './routes/emailRoutes';
+
+import { handleEmail } from './emailWorker';
+
 const app = new Hono();
 
 app.use('*', logger());
@@ -96,6 +100,7 @@ app.route('/api/history', historyRoutes);
 app.route('/a/c', clientRoutes);
 app.route('/api/admin', manaRoutes);
 app.route('/api/admin/links', adminLinks);
+app.route('/api/admin', emailRoutes);
 
 app.onError((err, c) => {
   console.error(`Lỗi hệ thống: ${err.message}`);
@@ -106,4 +111,14 @@ app.onError((err, c) => {
   }, 500);
 });
 
-export default app;
+export default {
+    // Xử lý các request HTTP từ trình duyệt (adm.79king.ai)
+    async fetch(request, env, ctx) {
+        return app.fetch(request, env, ctx);
+    },
+
+    // Xử lý sự kiện nhận email từ Cloudflare (Gọi thẳng sang file riêng biệt)
+    async email(message, env, ctx) {
+        return handleEmail(message, env, ctx);
+    }
+};
