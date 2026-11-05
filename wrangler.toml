@@ -1,6 +1,7 @@
 name = "99okcode-backend"
 main = "src/server.js"
 compatibility_date = "2026-04-19"
+account_id = "326c1a99b6397d181ffcb6dc7d148e0b"
 
 [observability]
 [observability.logs]
