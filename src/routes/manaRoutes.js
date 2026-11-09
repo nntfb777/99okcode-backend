@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { sign } from 'hono/jwt';
+import { writeAdminLog } from '../services/logger.js';
 const manaRoutes = new Hono();
 
 // --- HELPER: Hàm băm mật khẩu SHA-256 (Bảo mật cơ bản cho Worker) ---
@@ -42,6 +43,7 @@ manaRoutes.post('/accounts/add', checkSuperAdmin, async (c) => {
         await db.prepare("INSERT INTO users (username, password, role, created_at) VALUES (?, ?, ?, ?)")
                 .bind(username, hashed, role || 'admin', now)
                 .run();
+        await writeAdminLog(db, c, 'Thêm tài khoản phụ', `Đã thêm admin: ${username}`);
         return c.json({ success: true, message: "Thêm thành công!" });
     } catch (e) {
         return c.json({ success: false, message: "Tên đăng nhập đã tồn tại!" });
@@ -59,6 +61,7 @@ manaRoutes.delete('/accounts/delete', checkSuperAdmin, async (c) => {
     }
 
     await db.prepare("DELETE FROM users WHERE username = ? AND role != 'superadmin'").bind(username).run();
+    await writeAdminLog(db, c, 'Xóa tài khoản', `Đã xóa admin: ${username}`);
     return c.json({ success: true, message: "Đã xóa tài khoản!" });
 });
 
@@ -89,20 +92,34 @@ manaRoutes.post('/accounts/change-password', async (c) => {
     const hashedNew = await hashPassword(newPass);
     await db.prepare("UPDATE users SET password = ? WHERE username = ?")
             .bind(hashedNew, username).run();
-
+    await writeAdminLog(db, c, 'Đổi mật khẩu', `Admin ${username} đã đổi mật khẩu của mình`);
     return c.json({ success: true, message: "Đổi mật khẩu thành công!" });
 });
 
 // 5. RESET MẬT KHẨU (Chỉ SuperAdmin làm cho nhân viên)
 manaRoutes.post('/accounts/reset-password', checkSuperAdmin, async (c) => {
     const db = c.get('selectedDB');
+    const { username } = await c.req.json();
     const { targetUser, newPass } = await c.req.json();
 
     const hashedNew = await hashPassword(newPass);
     await db.prepare("UPDATE users SET password = ? WHERE username = ?")
             .bind(hashedNew, targetUser).run();
-
+    await writeAdminLog(db, c, 'Reset mật khẩu', `${username} đã reset mật khẩu cho ${targetUser}`);
     return c.json({ success: true, message: "Đã reset mật khẩu cho " + targetUser });
+});
+
+// Lấy danh sách lịch sử thao tác của admin (Hiển thị 100 dòng mới nhất)
+manaRoutes.get('/admin-logs', async (c) => {
+    const db = c.get('selectedDB');
+    try {
+        const { results } = await db.prepare(
+            "SELECT id, username, action, details, ip, created_at FROM admin_logs ORDER BY id DESC LIMIT 100"
+        ).all();
+        return c.json({ success: true, logs: results });
+    } catch (error) {
+        return c.json({ success: false, message: error.message }, 500);
+    }
 });
 
 export default manaRoutes;

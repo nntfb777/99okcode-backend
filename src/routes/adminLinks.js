@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { fetchWorkerApi } from '../services/workerService.js';
+import { writeAdminLog } from '../services/logger.js';
 
 const adminLinks = new Hono();
 
@@ -12,23 +13,47 @@ adminLinks.get('/list', async (c) => {
 
 // Thêm mới hoặc Cập nhật Link / Banner
 adminLinks.post('/save', async (c) => {
-  const body = await c.req.json();
-  const siteId = body.site_id || c.req.header('X-Site-ID') || '99ok';
-  const result = await fetchWorkerApi('/api/admin/links', 'POST', body, c.env, siteId);
-  return c.json(result);
+    const body = await c.req.json();
+    const siteId = body.site_id || c.req.header('X-Site-ID') || '99ok';
+    
+    // Thực hiện gọi Worker API lưu link như cũ
+    const result = await fetchWorkerApi('/api/admin/links', 'POST', body, c.env, siteId);
+
+    // 📝 GHI LOG THAO TÁC ADMIN
+    if (result.success || result) {
+        const actionName = body.category === 'banner_image' ? 'Cập nhật Banner' : 
+                           body.category === 'ping_link' ? 'Cập nhật Master URL' : 
+                           'Cập nhật Link Hệ Thống/MXH';
+        
+        const details = `Site: [${siteId.toUpperCase()}] - Mục: [${body.key_name}] -> Giá trị: ${body.value}`;
+        
+        // Gọi hàm ghi log vào Database chính
+        const mainDb = c.env.DB_99OK || c.get('selectedDB');
+        await writeAdminLog(mainDb, c, actionName, details);
+    }
+
+    return c.json(result);
 });
 
 // Xóa Link theo key_name
-adminLinks.delete('/delete', async (c) => {
-  const keyName = c.req.query('key_name');
-  const siteId = c.req.query('site_id') || '99ok';
-  
-  if (!keyName) {
-    return c.json({ success: false, error: 'Thiếu tham số key_name' }, 400);
-  }
-  
-  const result = await fetchWorkerApi(`/api/admin/links?key_name=${keyName}&site_id=${siteId}`, 'DELETE', null, c.env, siteId);
-  return c.json(result);
-});
 
+adminLinks.delete('/delete', async (c) => {
+    const keyName = c.req.query('key_name');
+    const siteId = c.req.query('site_id') || '99ok';
+    
+    if (!keyName) {
+        return c.json({ success: false, error: 'Thiếu tham số key_name' }, 400);
+    }
+
+    const result = await fetchWorkerApi(`/api/admin/links?key_name=${keyName}&site_id=${siteId}`, 'DELETE', null, c.env, siteId);
+
+    // 📝 GHI LOG XÓA LINK
+    if (result.success || result) {
+        const details = `Site: [${siteId.toUpperCase()}] - Xóa key: [${keyName}]`;
+        const mainDb = c.env.DB_99OK || c.get('selectedDB');
+        await writeAdminLog(mainDb, c, 'Xóa Đường Dẫn', details);
+    }
+
+    return c.json(result);
+});
 export default adminLinks;

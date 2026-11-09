@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-
+import { writeAdminLog } from '../services/logger.js';
 const admin = new Hono();
 
 admin.get('/list-codes', async (c) => {
@@ -32,6 +32,9 @@ admin.post('/generate-code', async (c) => {
     )
     .bind(finalCode, amount || 1)
     .run();
+
+    await writeAdminLog(c.get('selectedDB'), c, 'Tạo mã code', `Đã tạo mã code: ${finalCode}`);
+
 
     return c.json({ success: true, message: 'Tạo mã thành công' });
   } catch (error) {

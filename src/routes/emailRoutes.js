@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { writeAdminLog } from '../services/logger.js';
 
 const emailRoutes = new Hono();
 
@@ -26,6 +27,9 @@ emailRoutes.delete('/emails/:id', async (c) => {
     const id = c.req.param('id');
     try {
         await db.prepare("DELETE FROM emails WHERE id = ?").bind(id).run();
+        // Ghi log xóa email
+        const details = `Đã xóa email với ID: ${id}`;
+        await writeAdminLog(db, c, 'Xóa Email', details);
         return c.json({ success: true, message: "Đã xóa email thành công!" });
     } catch (error) {
         console.error("Lỗi xóa email:", error);

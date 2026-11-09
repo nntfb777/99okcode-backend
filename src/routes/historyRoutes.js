@@ -1,5 +1,6 @@
 // routes/historyRoutes.js
 import { Hono } from 'hono';
+import { writeAdminLog } from '../services/logger.js';
 const history = new Hono();
 
 // Lấy danh sách lịch sử
@@ -31,6 +32,10 @@ history.post('/delete-bulk', async (c) => {
         await db.prepare(`DELETE FROM history WHERE id IN (${placeholders})`)
                 .bind(...ids)
                 .run();
+        
+        // Ghi log xóa hàng loạt
+        const details = `Đã xóa ${ids.length} mục lịch sử.`;
+        await writeAdminLog(db, c, 'Xóa Lịch Sử', details);
 
         return c.json({ success: true, message: `Đã xóa thành công ${ids.length} mục lịch sử!` });
     } catch (err) {
@@ -45,6 +50,8 @@ history.post('/clear-all', async (c) => {
         await db.prepare("DELETE FROM history").run();
         // Reset ID về 1
         await db.prepare("DELETE FROM sqlite_sequence WHERE name='history'").run();
+        // Ghi log dọn sạch
+        await writeAdminLog(db, c, 'Dọn Sạch Lịch Sử', 'Đã dọn sạch toàn bộ lịch sử trong bảng history.');
         return c.json({ success: true, message: "Đã dọn sạch toàn bộ lịch sử!" });
     } catch (err) {
         return c.json({ success: false, message: "Lỗi dọn rác: " + err.message }, 500);
