@@ -48,6 +48,7 @@ admin.delete('/delete-code/:id', async (c) => {
   try {
     const id = c.req.param('id');
     await c.get('selectedDB').prepare("DELETE FROM codes WHERE id = ?").bind(id).run();
+    await writeAdminLog(c.get('selectedDB'), c, 'Xóa mã code', `Đã xóa mã code ID: ${id}`);
     return c.json({ success: true, message: 'Đã xóa mã' });
   } catch (error) {
     return c.json({ success: false, message: error.message }, 500);
@@ -74,6 +75,8 @@ admin.post('/generate-code-bulk', async (c) => {
     });
 
     await db.batch(statements);
+
+    await writeAdminLog(db, c, 'Tạo các mã code', `Đã tạo các mã code: ${codes.length}`);
     
     return c.json({ 
       success: true, 
@@ -122,7 +125,7 @@ admin.post('/delete-codes-bulk', async (c) => {
     await c.get('selectedDB').prepare(`DELETE FROM codes WHERE id IN (${placeholders})`)
       .bind(...ids)
       .run();
-
+    await writeAdminLog(c.get('selectedDB'), c, 'Xóa nhiều mã code', `Đã xóa ${ids.length} mã code.`);
     return c.json({ success: true, message: `Đã xóa thành công ${ids.length} mã` });
   } catch (error) {
     return c.json({ success: false, message: error.message }, 500);
