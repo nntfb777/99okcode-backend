@@ -13,8 +13,10 @@ adminLinks.get('/list', async (c) => {
 
 // Thêm mới hoặc Cập nhật Link / Banner
 adminLinks.post('/save', async (c) => {
+    const db = c.get('selectedDB');
     const body = await c.req.json();
     const siteId = body.site_id || c.req.header('X-Site-ID') || '99ok';
+    const { key_name, value, category } = body;
     
     // Thực hiện gọi Worker API lưu link như cũ
     const result = await fetchWorkerApi('/api/admin/links', 'POST', body, c.env, siteId);
@@ -28,7 +30,7 @@ adminLinks.post('/save', async (c) => {
         const details = `Site: [${siteId.toUpperCase()}] - Mục: [${body.key_name}] -> Giá trị: ${body.value}`;
         
         // Gọi hàm ghi log vào Database chính
-        const mainDb = c.env.DB_99OK || c.get('selectedDB');
+        const mainDb = c.get('selectedDB');
         await writeAdminLog(mainDb, c, actionName, details);
     }
 
@@ -50,7 +52,7 @@ adminLinks.delete('/delete', async (c) => {
     // 📝 GHI LOG XÓA LINK
     if (result.success || result) {
         const details = `Site: [${siteId.toUpperCase()}] - Xóa key: [${keyName}]`;
-        const mainDb = c.env.DB_99OK || c.get('selectedDB');
+        const mainDb = c.get('selectedDB');
         await writeAdminLog(mainDb, c, 'Xóa Đường Dẫn', details);
     }
 
