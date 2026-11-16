@@ -22,7 +22,7 @@ adminLinks.post('/save', async (c) => {
     const result = await fetchWorkerApi('/api/admin/links', 'POST', body, c.env, siteId);
 
     // 📝 GHI LOG THAO TÁC ADMIN
-    if (result.success || result) {
+    if (result.success && result.changedCount > 0) {
         const actionName = body.category === 'banner_image' ? 'Cập nhật Banner' : 
                            body.category === 'ping_link' ? 'Cập nhật Master URL' : 
                            'Cập nhật Link Hệ Thống/MXH';
