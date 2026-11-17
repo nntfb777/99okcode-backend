@@ -37,8 +37,8 @@ adminLinks.post('/save', async (c) => {
     return c.json(result);
 });
 
-// Xóa Link theo key_name
 
+// Xóa Link theo key_name (Hiển thị rõ link nào đã bị xóa trong log)
 adminLinks.delete('/delete', async (c) => {
     const keyName = c.req.query('key_name');
     const siteId = c.req.query('site_id') || '99ok';
@@ -47,13 +47,25 @@ adminLinks.delete('/delete', async (c) => {
         return c.json({ success: false, error: 'Thiếu tham số key_name' }, 400);
     }
 
+    // 1. Lấy danh sách link hiện tại trước khi xóa để tìm ra giá trị (value) của key chuẩn bị xóa
+    const currentDataRes = await fetchWorkerApi(`/api/admin/links?site_id=${siteId}`, 'GET', null, c.env, siteId);
+    const existingItems = currentDataRes.data || [];
+    const itemToDelete = existingItems.find(i => i.key_name === keyName);
+    const deletedValue = itemToDelete ? itemToDelete.value : 'Không rõ URL';
+
+    // 2. Thực hiện gọi Worker API để xóa key khỏi Database
     const result = await fetchWorkerApi(`/api/admin/links?key_name=${keyName}&site_id=${siteId}`, 'DELETE', null, c.env, siteId);
 
-    // 📝 GHI LOG XÓA LINK
-    if (result.success || result) {
-        const details = `Site: [${siteId.toUpperCase()}] - Xóa key: [${keyName}]-> Giá trị: ${body.value}`;
+    // 3. GHI LOG VỚI CHI TIẾT CỤ THỂ ĐƯỜNG DẪN BỊ XÓA
+    if (result && result.success) {
+        const categoryName = itemToDelete ? itemToDelete.category : 'link';
+        const actionName = categoryName === 'banner_image' ? 'Xóa Banner' : categoryName === 'ping_link' ? 'Xóa Master URL' : 'Xóa Đường Dẫn';
+        
+        // Ghi cực kỳ rõ ràng: Ai xóa, site nào, key gì và đường dẫn cụ thể là gì
+        const details = `Site: [${siteId.toUpperCase()}] - Xóa [${keyName}]: "${deletedValue}"`;
+        
         const mainDb = c.get('selectedDB');
-        await writeAdminLog(mainDb, c, 'Xóa Đường Dẫn', details);
+        await writeAdminLog(mainDb, c, actionName, details);
     }
 
     return c.json(result);
