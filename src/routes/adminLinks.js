@@ -51,7 +51,7 @@ adminLinks.delete('/delete', async (c) => {
 
     // 📝 GHI LOG XÓA LINK
     if (result.success || result) {
-        const details = `Site: [${siteId.toUpperCase()}] - Xóa key: [${keyName}]`;
+        const details = `Site: [${siteId.toUpperCase()}] - Xóa key: [${keyName}]-> Giá trị: ${body.value}`;
         const mainDb = c.get('selectedDB');
         await writeAdminLog(mainDb, c, 'Xóa Đường Dẫn', details);
     }
